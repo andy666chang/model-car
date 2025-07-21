@@ -1,0 +1,21 @@
+Reference,Value,Footprint,Datasheet,JLCPCB,Sim.Device,Sim.Pins,Sim.Type,?¸é?
+C1,100n,Capacitor_SMD:C_0402_1005Metric,~,C307379,,,,1
+C2,10u,Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,~,C15850,,,,1
+C3,10u,Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,~,C15850,,,,1
+C4,100n,Capacitor_SMD:C_0402_1005Metric,~,C307379,,,,1
+C5,100n,Capacitor_SMD:C_0402_1005Metric,~,C307379,,,,1
+H2,Conn_01x08,Connector_FFC-FPC:TE_0-1734839-8_1x08-1MP_P0.5mm_Horizontal,~,C5278509,,,,1
+JSL1,Conn_01x05,Connector_PinHeader_2.00mm:PinHeader_1x05_P2.00mm_Vertical,~,,,,,1
+Q1,NMOS,Package_TO_SOT_SMD:SOT-23,https://ngspice.sourceforge.io/docs/ngspice-manual.pdf,C22463594,NMOS,1=D 2=G 3=S,VDMOS,1
+R1,100,Resistor_SMD:R_0402_1005Metric,~,C77623,,,,1
+R2,100,Resistor_SMD:R_0402_1005Metric,~,C77623,,,,1
+R3,100,Resistor_SMD:R_0402_1005Metric,~,C77623,,,,1
+R4,100,Resistor_SMD:R_0402_1005Metric,~,C77623,,,,1
+R5,100,Resistor_SMD:R_0402_1005Metric,~,C77623,,,,1
+R6,100,Resistor_SMD:R_0402_1005Metric,~,C77623,,,,1
+R7,100,Resistor_SMD:R_0402_1005Metric,~,C77623,,,,1
+S2,Conn_01x03,Connector_Wuerth:Wuerth_WR-WTB_64800311622_1x03_P1.50mm_Vertical,~,,,,,1
+S3,Conn_01x01,TestPoint:TestPoint_THTPad_D1.5mm_Drill0.7mm,~,,,,,1
+U1,STM32G031G8Ux,Package_DFN_QFN:QFN-28_4x4mm_P0.5mm,https://www.st.com/resource/en/datasheet/stm32g031g8.pdf,C432211,,,,1
+U2,AMS1117-3.3,Package_TO_SOT_SMD:SOT-89-3,http://www.advanced-monolithic.com/pdf/ds1117.pdf,C18190088,,,,1
+FFC 8P,,,,C51068,,,,1
