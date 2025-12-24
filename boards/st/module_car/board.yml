@@ -1,0 +1,5 @@
+board:
+  name: module_car
+  vendor: st
+  socs:
+    - name: stm32g031xx

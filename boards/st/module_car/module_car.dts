@@ -1,0 +1,91 @@
+/*
+ * Copyright (c) 2019 SEAL AG
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <st/g0/stm32g031X8.dtsi>
+#include <st/g0/stm32g031g(4-6-8)ux-pinctrl.dtsi>
+
+/ {
+	model = "module_car STM32G031C8U6";
+	compatible = "st,module_car";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led_head_0: led_head_0 {
+			gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
+		};
+
+        led_head_1: led_head_1 {
+            gpios = <&gpiob 1 GPIO_ACTIVE_LOW>;
+        };
+
+        led_tail_0: led_tail_0 {
+            gpios = <&gpioa 6 GPIO_ACTIVE_LOW>;
+        };
+
+        led_tail_1: led_tail_1 {
+            gpios = <&gpioa 5 GPIO_ACTIVE_LOW>;
+        };
+
+        led_chasis: led_chasis {
+            gpios = <&gpioa 7 GPIO_ACTIVE_LOW>;
+        };
+
+        led_fire: led_fire {
+            gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
+        };
+
+        tp_1: tp_1 {
+            gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>;
+        };
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		sg_thro: sg_thro {
+			gpios = <&gpioa 12 GPIO_ACTIVE_LOW>;
+		};
+
+        sg_bt: sg_bt {
+            gpios = <&gpiob 3 GPIO_ACTIVE_LOW>;
+        };
+	};
+};
+
+&clk_hsi {
+	status = "okay";
+};
+
+&pll {
+	div-m = <1>;
+	mul-n = <8>;
+	div-p = <2>;
+	div-q = <2>;
+	div-r = <2>;
+	clocks = <&clk_hsi>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(64)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <1>;
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pb6 &usart1_rx_pb7>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};

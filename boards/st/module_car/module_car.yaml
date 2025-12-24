@@ -1,0 +1,14 @@
+identifier: module_car
+name: module_car
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 8
+flash: 64
+supported:
+  - gpio
+  - uart
+vendor: st
