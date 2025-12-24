@@ -3,3 +3,22 @@
 / {
 
 };
+
+&flash {
+    flash0: flash@8000000 {
+        compatible = "st,stm32-nv-flash", "soc-nv-flash";
+        write-block-size = < 0x8 >;
+        erase-block-size = < 0x800 >;
+        max-erase-time = < 0x28 >;
+        reg = < 0x8000000 0xf000 >;
+    };
+
+    data0: flash@800f000 {
+        compatible = "st,stm32-nv-flash", "soc-nv-flash";
+        write-block-size = < 0x8 >;
+        erase-block-size = < 0x800 >;
+        max-erase-time = < 0x28 >;
+        reg = < 0x800f000 0x1000 >;
+    };
+};
+
