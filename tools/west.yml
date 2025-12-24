@@ -1,0 +1,25 @@
+manifest:
+  version: "0.12"
+
+  defaults:
+    remote: zephyrproject
+
+  remotes:
+    - name: zephyrproject
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      repo-path: zephyr.git
+      path: zephyr
+      remote: zephyrproject
+      revision: v3.7.1
+      clone-depth: 1
+      import:
+        name-allowlist:
+          - cmsis
+          - hal_st
+          - hal_stm32
+
+  self:
+    path: zephyr

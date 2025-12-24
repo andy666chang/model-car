@@ -1,0 +1,9 @@
+
+.venv/**
+.west/
+zephyr/**
+modules/**
+build/**
+
+
+.DS_Store
