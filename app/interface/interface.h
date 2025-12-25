@@ -1,9 +1,3 @@
-/*
- * @Author: andy.chang 
- * @Date: 2024-12-31 10:40:40 
- * @Last Modified by: andy.chang
- * @Last Modified time: 2025-01-02 16:36:41
- */
 
 #pragma once
 
@@ -30,3 +24,17 @@ extern prj_cfg_t *prj_cfg;
 void load_config(void);
 void save_config(void);
 void dump_config(void);
+
+
+
+void led_head_set(uint8_t id, bool en);
+void led_tail_set(uint8_t id, bool en);
+void led_chasis_set(bool en);
+void led_fire_set(bool en);
+void led_string_set(bool en);
+void thro_led_update(int16_t thro);
+void thro_led_brake(void);
+void thro_led_set(uint8_t r, uint8_t g, uint8_t b);
+uint8_t led_idx_max(void);
+
+void btn_data_push(uint16_t data);

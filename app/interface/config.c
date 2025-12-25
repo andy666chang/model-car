@@ -6,7 +6,7 @@
 #include <zephyr/drivers/flash.h>
 #include <zephyr/logging/log.h>
 
-#include "config.h"
+#include "interface.h"
 
 LOG_MODULE_REGISTER(led, LOG_LEVEL_INF);
 

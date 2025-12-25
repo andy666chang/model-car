@@ -6,6 +6,7 @@
 #include <zephyr/drivers/counter.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
+#include "interface/interface.h"
 
 LOG_MODULE_REGISTER(rc, LOG_LEVEL_INF);
 
@@ -62,10 +63,11 @@ static void sg_bt_cb(struct gpio_callback *cb) {
         time[1] = ticks;
     } else {
         counter_get_value(cnt_dev, &ticks);
-        uint32_t diff = (ticks >= time[1]) ? (ticks - time[1]) : (max_ticks - time[1] + ticks + 1);
+        uint16_t diff = (ticks >= time[1]) ? (ticks - time[1]) : (max_ticks - time[1] + ticks + 1);
         
-        // TODO: sent to service
+        // Sent to service
         // printf("%s -> %4u\n", __func__, diff);
+        btn_data_push(diff);
     }
 }
 
