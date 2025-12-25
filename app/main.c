@@ -7,15 +7,16 @@
 #include <stdio.h>
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
-#include <zephyr/drivers/counter.h>
-
-#if CONFIG_LOG
+#include <zephyr/drivers/hwinfo.h>
 #include <zephyr/logging/log.h>
+
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
-#endif
 
 int main(void)
 {
+    uint8_t uuid[12];
+    ssize_t len = hwinfo_get_device_id(uuid, sizeof(uuid));
+
     #if CONFIG_LOG
     LOG_INF("Board: %s", CONFIG_BOARD);
     LOG_INF("Target: %s", CONFIG_BOARD_TARGET);
@@ -23,6 +24,16 @@ int main(void)
     printf("Board: %s\n", CONFIG_BOARD);
     printf("Target: %s\n", CONFIG_BOARD_TARGET);
     #endif
+
+    if (len > 0) {
+        printf("Device UUID: ");
+        for (int i = 0; i < len; i++) {
+            printf("%02X", uuid[i]);
+        }
+        printf("\n");
+    } else {
+        printf("Failed to get UUID, error: %zd\n", len);
+    }
 
 
     while(1) {
