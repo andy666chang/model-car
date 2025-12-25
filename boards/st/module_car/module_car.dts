@@ -53,11 +53,11 @@
 	gpio_keys {
 		compatible = "gpio-keys";
 		sg_thro: sg_thro {
-			gpios = <&gpioa 12 GPIO_ACTIVE_LOW>;
+			gpios = <&gpioa 12 GPIO_ACTIVE_HIGH>;
 		};
 
         sg_bt: sg_bt {
-            gpios = <&gpiob 3 GPIO_ACTIVE_LOW>;
+            gpios = <&gpiob 3 GPIO_ACTIVE_HIGH>;
         };
 	};
 };

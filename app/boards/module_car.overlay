@@ -22,3 +22,11 @@
     };
 };
 
+&timers1 {
+    status = "okay";
+    /* 64MHz / 64 = 1,000,000 Hz (1us per tick) */
+    st,prescaler = <63>; // reg: N-1
+    rc_cnt: counter {
+        status = "okay";
+    };
+};

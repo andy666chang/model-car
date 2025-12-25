@@ -7,4 +7,5 @@ list(APPEND BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(module_car)
 
+add_subdirectory(interface)
 target_sources(app PRIVATE main.c)

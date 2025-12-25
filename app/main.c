@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 #include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/counter.h>
 
 #if CONFIG_LOG
 #include <zephyr/logging/log.h>
@@ -21,6 +23,11 @@ int main(void)
     printf("Board: %s\n", CONFIG_BOARD);
     printf("Target: %s\n", CONFIG_BOARD_TARGET);
     #endif
+
+
+    while(1) {
+
+    }
 
 	return 0;
 }
