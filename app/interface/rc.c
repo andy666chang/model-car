@@ -48,8 +48,9 @@ static void sg_thro_cb(struct gpio_callback *cb) {
         counter_get_value(cnt_dev, &ticks);
         uint32_t diff = (ticks >= time[0]) ? (ticks - time[0]) : (max_ticks - time[0] + ticks + 1);
         
-        // TODO: sent to service
+        // Sent to service
         // printf("%s -> %4u\n", __func__, diff);
+        thro_data_push(diff);
     }
 }
 

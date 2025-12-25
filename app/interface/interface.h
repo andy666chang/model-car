@@ -38,3 +38,4 @@ void thro_led_set(uint8_t r, uint8_t g, uint8_t b);
 uint8_t led_idx_max(void);
 
 void btn_data_push(uint16_t data);
+void thro_data_push(uint16_t data);

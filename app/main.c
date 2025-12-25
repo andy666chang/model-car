@@ -40,6 +40,7 @@ int main(void)
     while(1) {
 
         btn_service_process();
+        thro_service_process();
 
     }
 
