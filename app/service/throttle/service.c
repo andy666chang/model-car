@@ -229,7 +229,7 @@ void thro_service_process(void) {
         thro = data - prj_cfg->center;
         thro *= prj_cfg->dir;
 
-        // printf("Throttle signal: %d\n", thro); // 1500 +- 544 in each 15ms
+        // printf("Throttle signal: %5d\n", thro); // 1500 +- 544 in each 15ms
 
         // Check short 
         //   throttle decrease

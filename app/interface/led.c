@@ -15,6 +15,9 @@ enum {
     LED_TAIL_1,
     LED_CHASIS,
     LED_FIRE,
+    LED_FW_SW,
+
+    LED_PIN_MAX,
 };
 
 static const struct led_pin_t {
@@ -23,19 +26,19 @@ static const struct led_pin_t {
 } led_pins[] = {
     [LED_HEAD_0] = {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(led_head_0), gpios),
-        .config = GPIO_OUTPUT_INACTIVE | GPIO_OPEN_DRAIN,
+        .config = GPIO_OUTPUT_INACTIVE,
     },
     [LED_HEAD_1] = {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(led_head_1), gpios),
-        .config = GPIO_OUTPUT_INACTIVE | GPIO_OPEN_DRAIN,
+        .config = GPIO_OUTPUT_INACTIVE,
     },
     [LED_TAIL_0] = {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(led_tail_0), gpios),
-        .config = GPIO_OUTPUT_INACTIVE | GPIO_OPEN_DRAIN,
+        .config = GPIO_OUTPUT_INACTIVE,
     },
     [LED_TAIL_1] = {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(led_tail_1), gpios),
-        .config = GPIO_OUTPUT_INACTIVE | GPIO_OPEN_DRAIN,
+        .config = GPIO_OUTPUT_INACTIVE,
     },
     [LED_CHASIS] = {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(led_chasis), gpios),
@@ -43,7 +46,11 @@ static const struct led_pin_t {
     },
     [LED_FIRE] = {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(led_fire), gpios),
-        .config = GPIO_OUTPUT_INACTIVE | GPIO_OPEN_DRAIN,
+        .config = GPIO_OUTPUT_INACTIVE,
+    },
+    [LED_FW_SW] = {
+        .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(fw_sw), gpios),
+        .config = GPIO_OUTPUT_INACTIVE,
     },
 };
 

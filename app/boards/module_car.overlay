@@ -30,3 +30,29 @@
         status = "okay";
     };
 };
+
+&pinctrl {
+    // led_head_0_default: led_head_0_default {
+    //     pinmux = <(STM32_PINMUX('B', 0, GPIO) | STM32_OSPEEDR_VERY_HIGH_SPEED)>;
+    // };
+
+    // led_head_1_default: led_head_1_default {
+    //     pinmux = <(STM32_PINMUX('B', 1, GPIO) | STM32_OSPEEDR_VERY_HIGH_SPEED)>;
+    // };
+
+    // led_tail_0_default: led_tail_0_default {
+    //     pinmux = <(STM32_PINMUX('A', 6, GPIO) | STM32_OSPEEDR_VERY_HIGH_SPEED)>;
+    // };
+
+    // led_tail_1_default: led_tail_1_default {
+    //     pinmux = <(STM32_PINMUX('A', 5, GPIO) | STM32_OSPEEDR_VERY_HIGH_SPEED)>;
+    // };
+
+    led_chasis_default: led_chasis_default {
+        pinmux = <(STM32_PINMUX('A', 7, GPIO) | STM32_OSPEEDR_VERY_HIGH_SPEED)>;
+    };
+    
+    // led_fire_default: led_fire_default {
+    //     pinmux = <(STM32_PINMUX('A', 4, GPIO) | STM32_OSPEEDR_VERY_HIGH_SPEED)>;
+    // };
+};

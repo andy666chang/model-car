@@ -22,19 +22,19 @@
 	leds {
 		compatible = "gpio-leds";
 		led_head_0: led_head_0 {
-			gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
+			gpios = <&gpiob 1 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
 		};
 
         led_head_1: led_head_1 {
-            gpios = <&gpiob 1 GPIO_ACTIVE_LOW>;
+            gpios = <&gpiob 0 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
         };
 
         led_tail_0: led_tail_0 {
-            gpios = <&gpioa 6 GPIO_ACTIVE_LOW>;
+            gpios = <&gpioa 6 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
         };
 
         led_tail_1: led_tail_1 {
-            gpios = <&gpioa 5 GPIO_ACTIVE_LOW>;
+            gpios = <&gpioa 5 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
         };
 
         led_chasis: led_chasis {
@@ -42,7 +42,11 @@
         };
 
         led_fire: led_fire {
-            gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
+            gpios = <&gpioa 4 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+        };
+
+        fw_sw: fw_sw {
+            gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
         };
 
         tp_1: tp_1 {
