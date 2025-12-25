@@ -16,67 +16,50 @@ static void sg_bt_cb(struct gpio_callback *cb);
 
 static const struct device *cnt_dev = DEVICE_DT_GET(DT_NODELABEL(rc_cnt));
 
-typedef void (*rc_pin_cb_t)(struct gpio_callback *cb);
 static struct rc_pin_t {
     struct gpio_dt_spec dt;
     struct gpio_callback cb_data;
-    rc_pin_cb_t func;
 } rc_pins[] = {
     {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(sg_thro), gpios),
-        .func = sg_thro_cb,
     },
     {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(sg_bt), gpios),
-        .func = sg_bt_cb,
     },
 };
 
 static uint32_t max_ticks = 0;
 static uint16_t time[2] = {0}; // 1000 ~ 2000
-
-
-static void sg_thro_cb(struct gpio_callback *cb) {
-    struct rc_pin_t *rc_pin = CONTAINER_OF(cb, struct rc_pin_t, cb_data);
-    int level = gpio_pin_get_dt(&rc_pin->dt);
-    uint32_t ticks;
-
-    if (level) {
-        counter_get_value(cnt_dev, &ticks);
-        time[0] = ticks;
-    } else {
-        counter_get_value(cnt_dev, &ticks);
-        uint32_t diff = (ticks >= time[0]) ? (ticks - time[0]) : (max_ticks - time[0] + ticks + 1);
-        
-        // Sent to service
-        // printf("%s -> %4u\n", __func__, diff);
-        thro_data_push(diff);
-    }
-}
-
-static void sg_bt_cb(struct gpio_callback *cb) {
-    struct rc_pin_t *rc_pin = CONTAINER_OF(cb, struct rc_pin_t, cb_data);
-    int level = gpio_pin_get_dt(&rc_pin->dt);
-    uint32_t ticks;
-
-    if (level) {
-        counter_get_value(cnt_dev, &ticks);
-        time[1] = ticks;
-    } else {
-        counter_get_value(cnt_dev, &ticks);
-        uint16_t diff = (ticks >= time[1]) ? (ticks - time[1]) : (max_ticks - time[1] + ticks + 1);
-        
-        // Sent to service
-        // printf("%s -> %4u\n", __func__, diff);
-        btn_data_push(diff);
-    }
-}
-
+static uint32_t ticks;
 static void rc_pins_callback(const struct device *dev,
                               struct gpio_callback *cb, uint32_t pins) {
+    uint16_t *ptime;
+    void (*pdata_push)(uint16_t);
+    counter_get_value(cnt_dev, &ticks);
+
+    if (cb == &rc_pins[0].cb_data) {
+        ptime = &time[0];
+        pdata_push = thro_data_push;
+    } else if (cb == &rc_pins[1].cb_data) {
+        ptime = &time[1];
+        pdata_push = btn_data_push;
+    } else {
+        return;
+    }
+
     struct rc_pin_t *rc_pin = CONTAINER_OF(cb, struct rc_pin_t, cb_data);
-    if (rc_pin->func) {
-        rc_pin->func(cb);
+    int level = gpio_pin_get_dt(&rc_pin->dt);
+
+    if (level) {
+        *ptime = ticks;
+    } else {
+        int16_t diff = ticks - *ptime;
+
+        if (diff < 0)
+            diff += max_ticks;
+        
+        // Sent to service
+        pdata_push(diff);
     }
 }
 
@@ -97,7 +80,7 @@ static int rc_init(void) {
         const struct gpio_dt_spec *dt = &rc_pins[i].dt;
         struct gpio_callback *cb_data = &rc_pins[i].cb_data;
 
-        ret = gpio_pin_configure_dt(dt, GPIO_INPUT);
+        ret = gpio_pin_configure_dt(dt, GPIO_INPUT | GPIO_PULL_UP);
         if (ret < 0) {
             LOG_ERR("Error %d: failed to configure %s pin %d", ret,
                     dt->port->name, dt->pin);

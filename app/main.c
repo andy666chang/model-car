@@ -42,6 +42,8 @@ int main(void)
         btn_service_process();
         thro_service_process();
 
+        k_cpu_idle();
+
     }
 
 	return 0;
