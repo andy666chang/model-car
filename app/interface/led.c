@@ -5,6 +5,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
+#include "interface.h"
 
 LOG_MODULE_REGISTER(led, LOG_LEVEL_INF);
 
@@ -15,7 +16,6 @@ enum {
     LED_TAIL_1,
     LED_CHASIS,
     LED_FIRE,
-    LED_FW_SW,
 
     LED_PIN_MAX,
 };
@@ -46,10 +46,6 @@ static const struct led_pin_t {
     },
     [LED_FIRE] = {
         .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(led_fire), gpios),
-        .config = GPIO_OUTPUT_INACTIVE,
-    },
-    [LED_FW_SW] = {
-        .dt = GPIO_DT_SPEC_GET(DT_NODELABEL(fw_sw), gpios),
         .config = GPIO_OUTPUT_INACTIVE,
     },
 };
@@ -89,34 +85,13 @@ void led_tail_set(uint8_t id, bool en) {
 }
 
 void led_chasis_set(bool en) {
-    // if (prj_cfg->mode == 0) {
+    if (prj_cfg->mode == 0) {
         gpio_pin_set_dt(&led_pins[LED_CHASIS].dt, en);
-    // }
+    }
 }
 
 void led_fire_set(bool en) {
     gpio_pin_set_dt(&led_pins[LED_FIRE].dt, en);
-}
-
-
-void led_string_set(bool en) {
-
-}
-
-void thro_led_update(int16_t thro) {
-
-}
-
-void thro_led_brake(void) {
-
-}
-
-void thro_led_set(uint8_t r, uint8_t g, uint8_t b) {
-
-}
-
-uint8_t led_idx_max(void) {
-    return 1;
 }
 
 static int led_init(void) {
