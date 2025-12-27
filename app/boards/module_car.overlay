@@ -22,15 +22,6 @@
     };
 };
 
-&timers1 {
-    status = "okay";
-    /* 64MHz / 64 = 1,000,000 Hz (1us per tick) */
-    st,prescaler = <63>; // reg: N-1
-    rc_cnt: counter {
-        status = "okay";
-    };
-};
-
 &pinctrl {
     // led_head_0_default: led_head_0_default {
     //     pinmux = <(STM32_PINMUX('B', 0, GPIO) | STM32_OSPEEDR_VERY_HIGH_SPEED)>;

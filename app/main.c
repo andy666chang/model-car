@@ -43,7 +43,6 @@ int main(void)
         thro_service_process();
 
         k_cpu_idle();
-
     }
 
 	return 0;

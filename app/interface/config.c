@@ -8,7 +8,7 @@
 
 #include "interface.h"
 
-LOG_MODULE_REGISTER(led, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(cfg, LOG_LEVEL_INF);
 
 #define MAGIC 0xA1234567
 
