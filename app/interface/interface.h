@@ -6,6 +6,12 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
+
+#include <zephyr/kernel.h>
+
+#define GET_SYS_TIME() k_uptime_get()
+#define WAIT_TIMEOUT(var, ms) ((GET_SYS_TIME() - (var)) > (ms))
 
 typedef struct prj_cfg_t {
     uint8_t version;

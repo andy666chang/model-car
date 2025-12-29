@@ -112,7 +112,7 @@ void btn_service_process(void) {
         // Diff Button state
         if (data != pre_btn) {
             // count timeout
-            time = k_uptime_get();
+            time = GET_SYS_TIME();
             cnt++;
         }
         
@@ -121,13 +121,13 @@ void btn_service_process(void) {
     }
 
     // Remove initial noise
-    if (k_uptime_get() <= 2000) {
+    if (GET_SYS_TIME() <= 2000) {
         cnt = 0;
     }
 
     // Count timeout
-    if ((k_uptime_get() - time) >= BTN_TIMEOUT &&
-        cnt) {
+    if (WAIT_TIMEOUT(time, BTN_TIMEOUT) && cnt) {
+        LOG_INF("BTN cnt: %d", cnt);
         printf("BTN cnt: %d\n", cnt);
         
         // Send event

@@ -64,7 +64,7 @@ static inline void thro_short(void) {
     led_tail_set(0, ON);
     led_tail_set(1, ON);
 
-    if ((k_uptime_get() - short_timeout) > THRO_SHORT_TIMEOUT) {
+    if (WAIT_TIMEOUT(short_timeout, THRO_SHORT_TIMEOUT)) {
         // turn off tail led
         if (sw_state == 0)
             led_tail_set(0, OFF);
@@ -84,7 +84,7 @@ static inline void thro_long(void) {
     led_tail_set(0, ON);
     led_tail_set(1, ON);
 
-    if ((k_uptime_get() - long_timeout) > THRO_LONG_TIMEOUT) {
+    if (WAIT_TIMEOUT(long_timeout, THRO_LONG_TIMEOUT)) {
         // turn off tail led
         if (sw_state == 0)
             led_tail_set(0, OFF);
@@ -100,7 +100,7 @@ static inline void thro_long(void) {
  * 
  */
 static inline void thro_fire(void) {
-    uint32_t duration = k_uptime_get() - fire_timeout;
+    uint32_t duration = GET_SYS_TIME() - fire_timeout;
 
     if (duration > 3 * THRO_FIRE_TIMEOUT) {
         // turn off fire led
@@ -141,12 +141,12 @@ static inline void thro_blink_wait(void) {
             else
                 led_chasis_set(ON);
         }
-    } else if (k_uptime_get() - wait_timeout >= THRO_WAIT_TIMEOUT) {
+    } else if (WAIT_TIMEOUT(wait_timeout, THRO_WAIT_TIMEOUT)) {
         // led blink
-        if ((k_uptime_get() - blink_time) >= BLINK_TIMEOUT) {
+        if (WAIT_TIMEOUT(blink_time, BLINK_TIMEOUT)) {
             led_state = !led_state;
             led_chasis_set(led_state);
-            blink_time = k_uptime_get();
+            blink_time = GET_SYS_TIME();
         }
     }
 }
@@ -177,13 +177,13 @@ static inline void thro_brake(void) {
  */
 static inline void thro_cali(void) {
     //  Capture center value
-    if ((k_uptime_get() - cali_time) < THRO_CALI_STEP1) {
+    if ((GET_SYS_TIME() - cali_time) < THRO_CALI_STEP1) {
         //  Capture center value
         prj_cfg->center = data;
 
         led_tail_set(0, ON);
         led_tail_set(1, ON);
-    } else if ((k_uptime_get() - cali_time) < THRO_CALI_STEP2) {
+    } else if ((GET_SYS_TIME() - cali_time) < THRO_CALI_STEP2) {
         //  Capture max value
         prj_cfg->max = data;
 
@@ -219,7 +219,7 @@ void thro_service_process(void) {
         if (system_get_state() == SYSTEM_CALIBRATION) {
             if ((event_cap & BIT(THRO_CALI)) == 0) {
                 event_cap |= BIT(THRO_CALI);
-                cali_time = k_uptime_get();
+                cali_time = GET_SYS_TIME();
             }
             break;
         } else if (system_get_state() == SYSTEM_LED_SELECT) {
@@ -240,7 +240,7 @@ void thro_service_process(void) {
             (abs(thro) > prj_cfg->margin)) {
             printf("THRO_SHORT\n");
             event_cap |= BIT(THRO_SHORT);
-            short_timeout = k_uptime_get();
+            short_timeout = GET_SYS_TIME();
         }
 
         // Check brake
@@ -259,7 +259,7 @@ void thro_service_process(void) {
         //     (abs(thro) < prj_cfg->margin)) {
         //     printf("THRO_LONG\n");
         //     event_cap |= BIT(THRO_LONG);
-        //     long_timeout = k_uptime_get();
+        //     long_timeout = GET_SYS_TIME();
         // }
 
         // Check fire
@@ -269,13 +269,13 @@ void thro_service_process(void) {
             (abs(thro) < prj_cfg->margin)) {
             printf("THRO_FIRE\n");
             event_cap |= BIT(THRO_FIRE);
-            fire_timeout = k_uptime_get();
+            fire_timeout = GET_SYS_TIME();
         }
 
         // Check stop blink led
         if (led_stop_blink && ((event_cap & BIT(THRO_WAIT)) == 0)) {
             if (abs(thro) < prj_cfg->margin) {
-                wait_timeout = k_uptime_get();
+                wait_timeout = GET_SYS_TIME();
                 event_cap |= BIT(THRO_WAIT);
             }
         }
@@ -314,7 +314,7 @@ void thro_service_process(void) {
 
     // calibration
     if ((event_cap & BIT(THRO_CALI)) &&
-        (k_uptime_get() - cali_time) < THRO_CALI_TIMEOUT) {
+        (GET_SYS_TIME() - cali_time) < THRO_CALI_TIMEOUT) {
         thro_cali();
     }
 
