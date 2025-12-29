@@ -1,15 +1,15 @@
 
-#include <stdio.h>
 #include <math.h>
+
+#include "module/log.h"
+#include "interface.h"
+
 #include <zephyr/init.h>
-#include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <stm32_ll_gpio.h>
-#include <zephyr/logging/log.h>
-#include "interface.h"
 
-LOG_MODULE_REGISTER(led_bar, LOG_LEVEL_INF);
+#define TAG "LED_BAR"
 
 enum {
     LED_BAR_SIG = 0,

@@ -1,10 +1,12 @@
 
-#include <zephyr/kernel.h>
+#include "system.h"
+#include "module/log.h"
+#include "interface/interface.h"
+
 #include <zephyr/sys/reboot.h>
 #include <zephyr/sys/ring_buffer.h>
-#include "service.h"
-#include "interface/interface.h"
-#include "system.h"
+
+#define TAG "BTN"
 
 #define BTN_TIMEOUT 750
 #define FLASH_TIMEOUT 500
@@ -40,7 +42,7 @@ static bool beam_state = 0;
 static void btn_switch(void) {
     sw_state++;
     sw_state %= 4;
-    printf("%s state: %d\n", __func__, sw_state);
+    LOG_INF("%s state: %d", __func__, sw_state);
 
     switch (sw_state) {
     case 0:
@@ -72,7 +74,7 @@ static void btn_switch(void) {
 
 static void btn_high_beam(void) {
     beam_state = !beam_state;
-    printf("%s beam: %d\n", __func__, beam_state);
+    LOG_INF("%s beam: %d", __func__, beam_state);
 
     if (beam_state) {
         // turn on high beam
@@ -128,7 +130,6 @@ void btn_service_process(void) {
     // Count timeout
     if (WAIT_TIMEOUT(time, BTN_TIMEOUT) && cnt) {
         LOG_INF("BTN cnt: %d", cnt);
-        printf("BTN cnt: %d\n", cnt);
         
         // Send event
         switch (cnt) {
@@ -139,20 +140,20 @@ void btn_service_process(void) {
                     prj_cfg->bar_idx = 0;
                 }
                 thro_led_update(prj_cfg->max);
-                printf("Select bar idx: %d\n", prj_cfg->bar_idx);
+                LOG_INF("Select bar idx: %d", prj_cfg->bar_idx);
             } else {
-                printf("BTN_SWITCH\n");
+                LOG_INF("BTN_SWITCH");
                 btn_switch();
             }
             break;
 
         case BTN_HIGH_BEAM: // High beam
-            printf("BTN_HIGH_BEAM\n");
+            LOG_INF("BTN_HIGH_BEAM");
             btn_high_beam();
             break;
 
         case BTN_FALSH: // LED Flash
-            printf("BTN_FLASH\n");
+            LOG_INF("BTN_FLASH");
             if (led_stop_blink) {
                 if (sw_state == 0)
                     led_chasis_set(OFF);
@@ -166,7 +167,7 @@ void btn_service_process(void) {
             break;
         
         case BTN_LED_SEL:
-            printf("BTN_LED_SEL\n");
+            LOG_INF("BTN_LED_SEL");
             if (system_get_state() == SYSTEM_NORMAL) {
                 system_set_state(SYSTEM_LED_SELECT);
                 thro_led_update(prj_cfg->max);
@@ -177,16 +178,16 @@ void btn_service_process(void) {
             break;
 
         case BTN_CALI: // Calibration
-            printf("BTN_CALI\n");
+            LOG_INF("BTN_CALI");
             if (system_get_state() == SYSTEM_NORMAL) {
                 system_set_state(SYSTEM_CALIBRATION);
             }
             break;
 
         case BTN_DIR: // Switch direction
-            printf("BTN_DIR\n");
+            LOG_INF("BTN_DIR");
             prj_cfg->dir = -prj_cfg->dir;
-            printf("dir = %d", prj_cfg->dir);
+            LOG_INF("dir = %d", prj_cfg->dir);
             save_config();
 
             // Restart
@@ -195,9 +196,9 @@ void btn_service_process(void) {
             break;
 
         case BTN_MODE: // Switch mode
-            printf("BTN_MODE\n");
+            LOG_INF("BTN_MODE");
             prj_cfg->mode = !prj_cfg->mode;
-            printf("mode = %d\n", prj_cfg->mode);
+            LOG_INF("mode = %d", prj_cfg->mode);
             save_config();
 
             if (prj_cfg->mode == 1) {

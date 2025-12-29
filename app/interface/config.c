@@ -1,14 +1,12 @@
 
-#include <stdio.h>
-#include <zephyr/init.h>
-#include <zephyr/kernel.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/flash.h>
-#include <zephyr/logging/log.h>
-
+#include "module/log.h"
 #include "interface.h"
 
-LOG_MODULE_REGISTER(led, LOG_LEVEL_INF);
+#include <zephyr/init.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/flash.h>
+
+#define TAG "CONFIG"
 
 #define MAGIC 0xA1234567
 
@@ -43,7 +41,7 @@ const struct device *flash_dev = DEVICE_DT_GET(DT_NODELABEL(flash));
 void load_config(void) {
     int ret = flash_read(flash_dev, DATA0_OFFSET, (uint8_t *)&cfg_pack, sizeof(cfg_pack_t));
     if (ret)
-        printf("Flash read error: %d\n", ret);
+        LOG_ERR("Flash read error: %d", ret);
 }
 
 void save_config(void) {
@@ -55,36 +53,36 @@ void save_config(void) {
     // Erase and write to flash
     ret = flash_erase(flash_dev, DATA0_OFFSET, DATA0_SIZE);
     if (ret)
-        printf("Flash read error: %d\n", ret);
+        LOG_ERR("Flash erase error: %d", ret);
 
     ret = flash_write(flash_dev, DATA0_OFFSET, (uint8_t *)&cfg_pack, sizeof(cfg_pack_t));
     if (ret)
-        printf("Flash read error: %d\n", ret);
+        LOG_ERR("Flash write error: %d", ret);
 }
 
 void dump_config(void) {
-    printf("prj_cfg:\n");
-    printf("  version = %d\n", prj_cfg->version);
-    printf("  dir = %d\n", prj_cfg->dir);
-    printf("  center = %d\n", prj_cfg->center);
-    printf("  margin = %d\n", prj_cfg->margin);
-    printf("  max = %d\n", prj_cfg->max);
-    printf("  mode = %d\n", prj_cfg->mode);
-    printf("  bar_idx = %d\n", prj_cfg->bar_idx);
+    LOG_INF("prj_cfg:");
+    LOG_INF("  version = %d", prj_cfg->version);
+    LOG_INF("  dir = %d", prj_cfg->dir);
+    LOG_INF("  center = %d", prj_cfg->center);
+    LOG_INF("  margin = %d", prj_cfg->margin);
+    LOG_INF("  max = %d", prj_cfg->max);
+    LOG_INF("  mode = %d", prj_cfg->mode);
+    LOG_INF("  bar_idx = %d", prj_cfg->bar_idx);
 }
 
 static int config_init(void) {
-    // printf("size of prj_cfg: %d\n", sizeof(prj_cfg_t)); // 10
-    // printf("size of cfg_pack: %d\n", sizeof(cfg_pack_t)); // 256
+    // LOG_INF("size of prj_cfg: %d", sizeof(prj_cfg_t)); // 10
+    // LOG_INF("size of cfg_pack: %d", sizeof(cfg_pack_t)); // 256
 
     // Read config pack from flash
     load_config();
-    printf("cfg_pack.check: 0x%08X\n", cfg_pack.check);
+    LOG_INF("cfg_pack.check: 0x%08X", cfg_pack.check);
 
     // TODO: verify data valid with CRC32
     if (cfg_pack.check != MAGIC) {
         // Replace by default config
-        printf("Invalid data in flash, reset to default\n");
+        LOG_INF("Invalid data in flash, reset to default");
         memset(&cfg_pack, 0, sizeof(cfg_pack_t));
         memcpy(&cfg_pack.pack.cfg, &default_cfg, sizeof(prj_cfg_t));
         cfg_pack.check = MAGIC;

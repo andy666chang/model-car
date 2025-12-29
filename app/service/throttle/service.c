@@ -1,16 +1,12 @@
-/*
- * @Author: andy.chang 
- * @Date: 2024-08-01 00:31:12 
- * @Last Modified by: andy.chang
- * @Last Modified time: 2025-01-02 16:51:04
- */
 
-#include <zephyr/kernel.h>
+#include "system.h"
+#include "module/log.h"
+#include "interface/interface.h"
+
 #include <zephyr/sys/reboot.h>
 #include <zephyr/sys/ring_buffer.h>
-#include "service.h"
-#include "interface/interface.h"
-#include "system.h"
+
+#define TAG "THRO"
 
 #define THRO_SHORT_TIMEOUT 300
 #define THRO_LONG_TIMEOUT  1000
@@ -189,13 +185,13 @@ static inline void thro_cali(void) {
 
         led_fire_set(ON);
     } else {
-        printf("center = %d\n", prj_cfg->center);
-        printf("max = %d\n", prj_cfg->max);
+        LOG_INF("center = %d", prj_cfg->center);
+        LOG_INF("max = %d", prj_cfg->max);
         save_config();
 
         // Exit calibration mode
         system_set_state(SYSTEM_NORMAL);
-        printf("Exit calibration mode\n");
+        LOG_INF("Exit calibration mode");
 
         // Clear event
         event_cap &= ~(BIT(THRO_CALI));
@@ -229,7 +225,7 @@ void thro_service_process(void) {
         thro = data - prj_cfg->center;
         thro *= prj_cfg->dir;
 
-        // printf("Throttle signal: %5d\n", thro); // 1500 +- 544 in each 15ms
+        LOG_DBG("Throttle signal: %5d", thro); // 1500 +- 544 in each 15ms
 
         // Check short 
         //   throttle decrease
@@ -238,7 +234,7 @@ void thro_service_process(void) {
         if ((abs(thro) < abs(pre_thro)) &&
             (abs(thro-pre_thro) > prj_cfg->margin) &&
             (abs(thro) > prj_cfg->margin)) {
-            printf("THRO_SHORT\n");
+            LOG_INF("THRO_SHORT");
             event_cap |= BIT(THRO_SHORT);
             short_timeout = GET_SYS_TIME();
         }
@@ -249,7 +245,7 @@ void thro_service_process(void) {
         if ((abs(pre_thro) < prj_cfg->margin) &&
             (abs(thro) > prj_cfg->margin) &&
             (thro < 0)) {
-            printf("THRO_BRAKE\n");
+            LOG_INF("THRO_BRAKE");
             event_cap |= BIT(THRO_BRAKE);
         }
 
@@ -257,7 +253,7 @@ void thro_service_process(void) {
         // if ((abs(thro) < abs(pre_thro)) &&
         //     (abs(thro-pre_thro) > prj_cfg->margin) &&
         //     (abs(thro) < prj_cfg->margin)) {
-        //     printf("THRO_LONG\n");
+        //     LOG_INF("THRO_LONG");
         //     event_cap |= BIT(THRO_LONG);
         //     long_timeout = GET_SYS_TIME();
         // }
@@ -267,7 +263,7 @@ void thro_service_process(void) {
         //   throttle in center
         if ((pre_thro > prj_cfg->margin) &&
             (abs(thro) < prj_cfg->margin)) {
-            printf("THRO_FIRE\n");
+            LOG_INF("THRO_FIRE");
             event_cap |= BIT(THRO_FIRE);
             fire_timeout = GET_SYS_TIME();
         }

@@ -1,13 +1,12 @@
 
-#include <stdio.h>
-#include <zephyr/init.h>
-#include <zephyr/kernel.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/gpio.h>
-#include <zephyr/logging/log.h>
+#include "module/log.h"
 #include "interface.h"
 
-LOG_MODULE_REGISTER(led, LOG_LEVEL_INF);
+#include <zephyr/init.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
+
+#define TAG "LED"
 
 enum {
     LED_HEAD_0 = 0,

@@ -1,14 +1,13 @@
 
-#include <stdio.h>
+#include "module/log.h"
+#include "interface.h"
+
 #include <zephyr/init.h>
-#include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/counter.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/logging/log.h>
-#include "interface/interface.h"
 
-LOG_MODULE_REGISTER(rc, LOG_LEVEL_INF);
+#define TAG "RC"
 
 static void sg_thro_cb(struct gpio_callback *cb);
 static void sg_bt_cb(struct gpio_callback *cb);
@@ -71,9 +70,9 @@ static int rc_init(void) {
     // Init timer
     counter_start(cnt_dev);
     max_ticks = counter_get_max_top_value(cnt_dev);
-    printf("Timer started\n");
-    printf("  Frequency: %u Hz\n", counter_get_frequency(cnt_dev));
-    printf("  MAX: %u ticks\n", max_ticks);
+    LOG_INF("Timer started");
+    LOG_INF("  Frequency: %u Hz", counter_get_frequency(cnt_dev));
+    LOG_INF("  MAX: %u ticks", max_ticks);
 
     // Init RC input
     for (size_t i = 0; i < ARRAY_SIZE(rc_pins); i++) {
