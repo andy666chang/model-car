@@ -11,13 +11,14 @@
 #define MAGIC 0xA1234567
 
 typedef struct cfg_pack_t {
+    uint32_t header;
+
     union pack_t {
         prj_cfg_t cfg;
-        uint8_t dummy[252];
-    };
+        uint8_t dummy[248];
+    } pack;
 
-    union pack_t pack;
-    uint32_t check; // CRC32
+    uint32_t crc32;
 } cfg_pack_t;
 
 static const prj_cfg_t default_cfg = {
@@ -31,7 +32,7 @@ static const prj_cfg_t default_cfg = {
     .bar_idx = 0,
 };
 
-static cfg_pack_t cfg_pack = {.check = 0x55};
+static cfg_pack_t cfg_pack;
 prj_cfg_t *prj_cfg = NULL;
 
 #define DATA0_OFFSET DT_REG_ADDR(DT_NODELABEL(data0)) - DT_REG_ADDR(DT_NODELABEL(flash0))
@@ -46,9 +47,12 @@ void load_config(void) {
 
 void save_config(void) {
     int ret = 0;
+    
+    cfg_pack.header = MAGIC;
 
-    // TODO: Caculate CRC32
-    cfg_pack.check = MAGIC;
+    // Calculate CRC32
+    cfg_pack.crc32 =
+        crc_calculate((uint8_t *)&cfg_pack.pack, sizeof(cfg_pack.pack));
 
     // Erase and write to flash
     ret = flash_erase(flash_dev, DATA0_OFFSET, DATA0_SIZE);
@@ -77,15 +81,17 @@ static int config_init(void) {
 
     // Read config pack from flash
     load_config();
-    LOG_INF("cfg_pack.check: 0x%08X", cfg_pack.check);
+    LOG_INF("cfg_pack.header: 0x%08X", cfg_pack.header);
+    LOG_INF("cfg_pack.crc32: 0x%08X", cfg_pack.crc32);
 
-    // TODO: verify data valid with CRC32
-    if (cfg_pack.check != MAGIC) {
+    // Verify data valid with CRC32
+    uint32_t crc =
+        crc_calculate((uint8_t *)&cfg_pack.pack, sizeof(cfg_pack.pack));
+    if (cfg_pack.crc32 != crc || cfg_pack.header != MAGIC) {
         // Replace by default config
-        LOG_INF("Invalid data in flash, reset to default");
+        LOG_WRN("Invalid data in flash, reset to default");
         memset(&cfg_pack, 0, sizeof(cfg_pack_t));
         memcpy(&cfg_pack.pack.cfg, &default_cfg, sizeof(prj_cfg_t));
-        cfg_pack.check = MAGIC;
 
         // Erase and write to flash
         save_config();

@@ -31,7 +31,7 @@ void load_config(void);
 void save_config(void);
 void dump_config(void);
 
-
+uint32_t crc_calculate(uint8_t *data, uint32_t len);
 
 void led_head_set(uint8_t id, bool en);
 void led_tail_set(uint8_t id, bool en);
