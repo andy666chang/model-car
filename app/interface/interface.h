@@ -45,3 +45,4 @@ uint8_t led_idx_max(void);
 
 void btn_data_push(uint16_t data);
 void thro_data_push(uint16_t data);
+void shell_data_push(uint8_t data);

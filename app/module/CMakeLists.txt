@@ -4,3 +4,6 @@ if(NOT CONFIG_LOG)
     target_sources(app PRIVATE log.c)
 endif()
 
+if(NOT CONFIG_SHELL)
+    target_sources(app PRIVATE shell.c)
+endif()

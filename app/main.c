@@ -39,6 +39,7 @@ int main(void)
 
         btn_service_process();
         thro_service_process();
+        shell_service_process();
 
         k_cpu_idle();
 
