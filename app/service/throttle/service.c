@@ -304,7 +304,7 @@ void thro_service_process(void) {
     }
 
     // Brake
-    if ((event_cap & (BIT(THRO_BRAKE) || BIT(THRO_INPUT)))) {
+    if (event_cap & BIT(THRO_BRAKE)) {
         thro_brake();
     }
 
