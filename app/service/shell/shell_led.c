@@ -1,29 +1,19 @@
-/*
- * @Author: andy.chang 
- * @Date: 2024-12-31 15:01:03 
- * @Last Modified by: andy.chang
- * @Last Modified time: 2024-12-31 15:17:47
- */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <errno.h>
 
-#include "shell_led.h"
+#include <module/shell.h>
+#include <module/log.h>
+
 #include "interface/interface.h"
-
-#include "module/log.h"
 
 #define TAG "SHELL-LED"
 
-
-int shell_led(int argc, char *argv[]) {
-    // for (size_t i = 0; i < argc; i++) {
-    //     LOGI(TAG, " led sub: %s", argv[i]);
-    // }
-
+static int shell_led(int argc, char *argv[]) {
     int idx = 99, level = 99;
 
     for (int i = 0; i < argc; i++) {
@@ -78,3 +68,12 @@ int shell_led(int argc, char *argv[]) {
 
     return 0;
 }
+
+#include <zephyr/kernel.h>
+
+STRUCT_SECTION_ITERABLE(shell_t, led) = {
+    .name = "led",
+    .info = "led -i <0...5> -l <0...1>",
+    .func = shell_led,
+    .sub = NULL,
+};

@@ -2,9 +2,8 @@
 #include <errno.h>
 
 #include "system.h"
-#include "module/log.h"
-#include "module/shell.h"
-#include "shell.h"
+#include <module/shell.h>
+#include <module/log.h>
 #include "interface/interface.h"
 
 #include <zephyr/drivers/uart.h>

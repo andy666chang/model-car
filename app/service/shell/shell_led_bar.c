@@ -1,24 +1,19 @@
-/*
- * @Author: andy.chang 
- * @Date: 2024-12-31 15:01:03 
- * @Last Modified by: andy.chang
- * @Last Modified time: 2024-12-31 15:17:47
- */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <errno.h>
 
-#include "shell_led_bar.h"
+#include <module/shell.h>
+#include <module/log.h>
+
 #include "interface/interface.h"
-
-#include "module/log.h"
 
 #define TAG "SHELL-LED_BAR"
 
-int shell_led_bar(int argc, char *argv[]) {
+static int shell_led_bar(int argc, char *argv[]) {
 
     if (argc < 3) {
         LOGE(TAG, "Invalid args, need 3 args for r,g,b");
@@ -35,3 +30,12 @@ int shell_led_bar(int argc, char *argv[]) {
 
     return 0;
 }
+
+#include <zephyr/kernel.h>
+
+STRUCT_SECTION_ITERABLE(shell_t, led_bar) = {
+    .name = "led_bar",
+    .info = "led_bar <r> <g> <b>",
+    .func = shell_led_bar,
+    .sub = NULL,
+};

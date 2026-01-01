@@ -8,11 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <stdint.h>
 #include <ctype.h>
 
 #include <errno.h>
 
+#include "shell.h"
 #include "log.h"
 
 #define TAG "SHELL"
@@ -48,6 +50,8 @@ enum
 
 #define SHELL_BUF_LEN 128
 #define SHELL_HIS_LEN 5
+
+int parse_shell(uint8_t *shell, uint32_t len);
 
 static char shell_his[SHELL_HIS_LEN][SHELL_BUF_LEN] = {0};
 static uint16_t h_idx = 0;
@@ -89,7 +93,6 @@ static void ctrl_metakeys_handle(char data)
     case SHELL_VT100_ASCII_CTRL_B: /* CTRL + B */
         break;
     case SHELL_VT100_ASCII_CTRL_C: /* CTRL + C */
-        // LOGI(TAG, "CTRL + C");
         {
             printf("\33[2K\r");
             memmove(&shell_buf[idx], &shell_buf[idx+1], strlen(&shell_buf[idx+1])+1);
@@ -137,17 +140,17 @@ void shell_process(uint8_t *data, uint16_t len)
         case SHELL_RECEIVE_DEFAULT:
             if (data[i] == '\r')
             {
-                // TODO: history
-                // TODO: execute cmd
                 printf("\33[2K\r");
                 memmove(&shell_buf[idx], &shell_buf[idx+1], strlen(&shell_buf[idx+1])+1);
                 printf("%s%s\r\n", "mcu-cli > ", shell_buf);
 
+                // Save history
                 if (strlen(shell_buf))
                 {
                     shell_history_record(shell_buf, sizeof(shell_buf));
                 }
 
+                // Execute cmd
                 LOGI(TAG, "shell: %s", shell_buf);
                 parse_shell(shell_buf, sizeof(shell_buf));
 
@@ -276,3 +279,105 @@ void shell_process(uint8_t *data, uint16_t len)
 }
 
 
+#include <zephyr/kernel.h>
+
+static int execute_shell(int argc, char *argv[], struct shell_t shell_list[]) {
+    for (size_t i = 0; shell_list[i].name != NULL; i++) {
+        if ( !strcasecmp(argv[0], shell_list[i].name)) {
+            if (shell_list[i].sub && argc >= 1) {
+                return execute_shell(argc-1, argv+1, shell_list[i].sub);
+            }
+
+            if (shell_list[i].func) {
+                return shell_list[i].func(argc-1, argv+1);
+            }
+        }
+    }
+    
+    return -EINVAL;
+}
+
+__attribute__((weak)) int parse_shell(uint8_t *shell, uint32_t len) {
+    (void) len;
+    int ret = 0;
+
+    int argc = 0;
+    char *saveptr;
+    char *argv[20] = {NULL};
+
+    // parse shell
+    argv[argc] = strtok_r((char *)shell, " ", &saveptr);
+    LOG_DBG("%s", argv[argc]);
+    
+    while(argv[argc] != NULL) {
+        argc++;
+
+        // check ovrflow
+        if (argc > ARRAY_SIZE(argv)-1 ) { 
+            break; 
+        }
+
+        argv[argc] = strtok_r(NULL, " ", &saveptr);
+        LOG_DBG("%s", argv[argc]);
+    }
+
+    // check shell keyword
+    extern struct shell_t _shell_t_list_start[];
+    ret = execute_shell(argc, argv, _shell_t_list_start);
+    switch (ret) {
+        case 0:
+            break;
+        case -EINVAL:
+            LOGE(TAG, "Invalid argument");
+            break;
+        
+        default:
+            LOGE(TAG, "Unknow: %d", ret);
+            break;
+    }
+    
+    return 0;
+}
+
+
+static uint8_t tab_idx = 0;
+static char tab[10] = {0};
+static void shell_dump(struct shell_t shell_list[]) {
+    for (size_t i = 0; shell_list[i].name != NULL; i++) {
+        if (shell_list[i].sub) {
+            LOGI(TAG, "%s%s: %s", tab, shell_list[i].name,
+                 shell_list[i].info);
+
+            tab[tab_idx++] = '\t';
+            shell_dump(shell_list[i].sub);
+            tab[--tab_idx] = '\0';
+        } else {
+            LOGI(TAG, "%s%s - %s", tab, shell_list[i].name,
+                 shell_list[i].info);
+        }
+    }
+}
+
+static int shell_help(int argc, char *argv[]) {
+    (void) argc;
+    (void) argv;
+
+    extern struct shell_t _shell_t_list_start[];
+    shell_dump(_shell_t_list_start);
+
+    return 0;
+}
+
+STRUCT_SECTION_ITERABLE(shell_t, help) = {
+    .name = "help",
+    .info = "list shell",
+    .func = shell_help,
+    .sub = NULL,
+};
+
+STRUCT_SECTION_ITERABLE(shell_t, zz_end) = {
+    .name = NULL,
+    .info = NULL,
+    .func = NULL,
+    .sub = NULL,
+};

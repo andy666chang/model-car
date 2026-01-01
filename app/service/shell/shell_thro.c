@@ -1,29 +1,19 @@
-/*
- * @Author: andy.chang 
- * @Date: 2024-12-31 15:01:03 
- * @Last Modified by: andy.chang
- * @Last Modified time: 2024-12-31 15:20:56
- */
-
-#include "shell_thro.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <errno.h>
+
+#include <module/shell.h>
+#include <module/log.h>
 
 #include "service/throttle/service.h"
 
-#include "module/log.h"
-
 #define TAG "SHELL-THRO"
 
-int shell_thro(int argc, char *argv[]) {
-    // for (size_t i = 0; i < argc; i++) {
-    //     LOGI(TAG, " led sub: %s", argv[i]);
-    // }
-
+static int shell_thro(int argc, char *argv[]) {
     int thro = 0;
 
     for (int i = 0; i < argc; i++) {
@@ -37,3 +27,12 @@ int shell_thro(int argc, char *argv[]) {
 
     return 0;
 }
+
+#include <zephyr/kernel.h>
+
+STRUCT_SECTION_ITERABLE(shell_t, thro) = {
+    .name = "thro",
+    .info = "thro -v <1000...2000>",
+    .func = shell_thro,
+    .sub = NULL,
+};

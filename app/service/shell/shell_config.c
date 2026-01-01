@@ -1,20 +1,14 @@
-/*
- * @Author: andy.chang 
- * @Date: 2024-12-31 15:01:03 
- * @Last Modified by: andy.chang
- * @Last Modified time: 2025-12-26 16:38:29
- */
-
-#include "shell_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <errno.h>
+
+#include <module/shell.h>
+#include <module/log.h>
 
 #include "interface/interface.h"
-
-#include "module/log.h"
 
 #define TAG "SHELL-CFG"
 
@@ -97,7 +91,7 @@ static int shell_bar_idx(int argc, char *argv[]) {
     return 0;
 }
 
-struct shell_t _cfg_list[] = {
+static const struct shell_t cfg_list[] = {
     { "dump", "dump config", shell_dump, NULL},
     { "load", "load config", shell_load, NULL},
     { "save", "save config", shell_save, NULL},
@@ -108,4 +102,13 @@ struct shell_t _cfg_list[] = {
     { "mode", "mode <0/1>", shell_mode, NULL},
     { "bar_idx", "bar_idx <0-3>", shell_bar_idx, NULL},
     SHELL_END,
+};
+
+#include <zephyr/kernel.h>
+
+STRUCT_SECTION_ITERABLE(shell_t, cfg) = {
+    .name = "config",
+    .info = "config func",
+    .func = NULL,
+    .sub = cfg_list,
 };

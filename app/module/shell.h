@@ -11,6 +11,15 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define SHELL_END { NULL, NULL, NULL, NULL}
+
+struct shell_t {
+    char *name;
+    char *info;
+    int (*func)(int argc, char *argv[]);
+    struct shell_t *sub;
+};
+
 /**
  * @brief 
  * 

@@ -6,4 +6,5 @@ endif()
 
 if(NOT CONFIG_SHELL)
     target_sources(app PRIVATE shell.c)
+    zephyr_linker_sources(SECTIONS shell.ld)
 endif()
