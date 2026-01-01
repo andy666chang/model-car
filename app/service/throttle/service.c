@@ -53,6 +53,8 @@ struct thro_msg_t {
     uint16_t data;
 };
 
+K_MEM_SLAB_DEFINE_STATIC(thro_msg_slab, sizeof(struct thro_msg_t), 16, 2);
+
 K_FIFO_DEFINE(thro_fifo);
 #endif
 
@@ -60,14 +62,14 @@ void thro_data_push(uint16_t data) {
 #ifndef CONFIG_MULTITHREADING
     ring_buf_put(&thro_buf, &data, sizeof(data));
 #else
-    struct thro_msg_t *pmsg = k_malloc(sizeof(struct thro_msg_t));
-    if (pmsg == NULL) {
-        LOG_ERR("k_malloc fail!");
-        return;
-    }
+    struct thro_msg_t *pmsg;
 
-    pmsg->data = data;
-    k_fifo_put(&thro_fifo, pmsg);
+    if (k_mem_slab_alloc(&thro_msg_slab, (void **)&pmsg, K_NO_WAIT) == 0) {
+        pmsg->data = data;
+        k_fifo_put(&thro_fifo, pmsg);
+    } else {
+        LOG_ERR("k_mem_slab_alloc fail!");
+    }
 #endif
 }
 
@@ -240,7 +242,7 @@ void thro_service_process(void) {
         struct thro_msg_t *pmsg = k_fifo_get(&thro_fifo, K_MSEC(50));
         if (pmsg != NULL) {
             data = pmsg->data;
-            k_free(pmsg);
+            k_mem_slab_free(&thro_msg_slab, (void *)pmsg);
         } else {
             break;
         }

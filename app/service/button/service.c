@@ -37,6 +37,8 @@ struct btn_msg_t {
     uint16_t data;
 };
 
+K_MEM_SLAB_DEFINE_STATIC(btn_msg_slab, sizeof(struct btn_msg_t), 16, 2);
+
 K_FIFO_DEFINE(btn_fifo);
 #endif
 
@@ -44,14 +46,14 @@ void btn_data_push(uint16_t data) {
 #ifndef CONFIG_MULTITHREADING
     ring_buf_put(&btn_buf, &data, sizeof(data));
 #else
-    struct btn_msg_t *pmsg = k_malloc(sizeof(struct btn_msg_t));
-    if (pmsg == NULL) {
-        LOG_ERR("k_malloc fail!");
-        return;
-    }
+    struct btn_msg_t *pmsg;
 
-    pmsg->data = data;
-    k_fifo_put(&btn_fifo, pmsg);
+    if (k_mem_slab_alloc(&btn_msg_slab, (void **)&pmsg, K_NO_WAIT) == 0) {
+        pmsg->data = data;
+        k_fifo_put(&btn_fifo, pmsg);
+    } else {
+        LOG_ERR("k_mem_slab_alloc fail!");
+    }
 #endif
 }
 
@@ -130,7 +132,7 @@ void btn_service_process(void) {
         struct btn_msg_t *pmsg = k_fifo_get(&btn_fifo, K_MSEC(100));
         if (pmsg != NULL) {
             data = pmsg->data;
-            k_free(pmsg);
+            k_mem_slab_free(&btn_msg_slab, (void *)pmsg);
         } else {
             break;
         }

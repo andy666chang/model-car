@@ -22,6 +22,8 @@ struct sh_msg_t {
     uint8_t data;
 };
 
+K_MEM_SLAB_DEFINE_STATIC(sh_msg_slab, sizeof(struct sh_msg_t), 16, 2);
+
 K_FIFO_DEFINE(sh_fifo);
 #endif
 
@@ -30,14 +32,14 @@ void shell_data_push(uint8_t data) {
     ring_buf_put(&sh_buf, &data, sizeof(data));
     LOG_DBG("uart: %c", data);
 #else
-    struct sh_msg_t *pmsg = k_malloc(sizeof(struct sh_msg_t));
-    if (pmsg == NULL) {
-        LOG_ERR("k_malloc fail!");
-        return;
-    }
+    struct sh_msg_t *pmsg;
 
-    pmsg->data = data;
-    k_fifo_put(&sh_fifo, pmsg);
+    if (k_mem_slab_alloc(&sh_msg_slab, (void **)&pmsg, K_NO_WAIT) == 0) {
+        pmsg->data = data;
+        k_fifo_put(&sh_fifo, pmsg);
+    } else {
+        LOG_ERR("k_mem_slab_alloc fail!");
+    }
 #endif
 }
 
@@ -71,11 +73,15 @@ void shell_service_process(void) {
 
 static void sh_service(void) {
     while (1) {
-        struct sh_msg_t *pmsg = k_fifo_get(&sh_fifo, K_FOREVER);
-        uint8_t data = pmsg->data;
-        k_free(pmsg);
+        struct sh_msg_t *pmsg;
+        pmsg = k_fifo_get(&sh_fifo, K_FOREVER);
 
-        shell_process(&data, 1);
+        if (pmsg != NULL) {
+            uint8_t data = pmsg->data;
+            k_mem_slab_free(&sh_msg_slab, (void *)pmsg);
+
+            shell_process(&data, 1);
+        }
     }
 }
 
