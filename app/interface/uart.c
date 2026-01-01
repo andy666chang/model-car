@@ -1,4 +1,5 @@
 
+#include <system.h>
 #include "module/log.h"
 #include "interface.h"
 
@@ -45,4 +46,4 @@ static int uart_init(void) {
     return ret;
 }
 
-SYS_INIT(uart_init, APPLICATION, 0);
+SYS_INIT(uart_init, APPLICATION, SYS_INIT_NORMAL);

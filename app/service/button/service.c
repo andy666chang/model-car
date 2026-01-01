@@ -29,10 +29,30 @@
 
 static uint32_t time = 0; // Record time stamp for fast click
 
+#ifndef CONFIG_MULTITHREADING
 RING_BUF_DECLARE(btn_buf, 64);
+#else
+struct btn_msg_t {
+    void *fifo_reserved; 
+    uint16_t data;
+};
+
+K_FIFO_DEFINE(btn_fifo);
+#endif
 
 void btn_data_push(uint16_t data) {
+#ifndef CONFIG_MULTITHREADING
     ring_buf_put(&btn_buf, &data, sizeof(data));
+#else
+    struct btn_msg_t *pmsg = k_malloc(sizeof(struct btn_msg_t));
+    if (pmsg == NULL) {
+        LOG_ERR("k_malloc fail!");
+        return;
+    }
+
+    pmsg->data = data;
+    k_fifo_put(&btn_fifo, pmsg);
+#endif
 }
 
 uint8_t sw_state = 0;
@@ -100,10 +120,21 @@ void btn_service_process(void) {
     static uint16_t pre_btn = RC_MAX;
     static uint8_t cnt = 0;
 
+#ifndef CONFIG_MULTITHREADING
     while (!ring_buf_is_empty(&btn_buf)) {
         uint16_t data = 0;
         ring_buf_get(&btn_buf, &data, sizeof(data));
-
+#else
+    do {
+        uint16_t data = 0;
+        struct btn_msg_t *pmsg = k_fifo_get(&btn_fifo, K_MSEC(100));
+        if (pmsg != NULL) {
+            data = pmsg->data;
+            k_free(pmsg);
+        } else {
+            break;
+        }
+#endif
         // printf("Button signal: %d\n", data); // 978 or 2045 in each 15ms
         if (data >= RC_CENTER) {
             data = RC_MAX;
@@ -120,7 +151,11 @@ void btn_service_process(void) {
         
         // record Button state
         pre_btn = data;
+#ifndef CONFIG_MULTITHREADING
     }
+#else
+    } while (0);
+#endif
 
     // Remove initial noise
     if (GET_SYS_TIME() <= 2000) {
@@ -191,7 +226,11 @@ void btn_service_process(void) {
             save_config();
 
             // Restart
+#ifndef CONFIG_MULTITHREADING
             k_busy_wait(100*1000);
+#else
+            k_sleep(K_MSEC(100));
+#endif
             sys_reboot(SYS_REBOOT_COLD);
             break;
 
@@ -217,3 +256,16 @@ void btn_service_process(void) {
     
     return;
 }
+
+#if CONFIG_MULTITHREADING
+
+static void btn_service(void) {
+    while (1) {
+        btn_service_process();
+    }
+}
+
+K_THREAD_DEFINE(btn_ser_id, APP_STACK_SIZE, btn_service, NULL, NULL, NULL,
+        APP_PRIO_NORMAL, 0, 0);
+
+#endif

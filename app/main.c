@@ -34,7 +34,7 @@ int main(void)
         printf("Failed to get UUID, error: %zd\n", len);
     }
 
-
+#ifndef CONFIG_MULTITHREADING
     while(1) {
 
         btn_service_process();
@@ -44,6 +44,7 @@ int main(void)
         k_cpu_idle();
 
     }
+#endif
 
 	return 0;
 }

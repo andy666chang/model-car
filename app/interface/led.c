@@ -1,4 +1,5 @@
 
+#include <system.h>
 #include "module/log.h"
 #include "interface.h"
 
@@ -115,4 +116,4 @@ static int led_init(void) {
     return ret;
 }
 
-SYS_INIT(led_init, APPLICATION, 0);
+SYS_INIT(led_init, APPLICATION, SYS_INIT_NORMAL);

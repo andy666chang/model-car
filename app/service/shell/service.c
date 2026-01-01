@@ -14,13 +14,34 @@
 
 #define SHELL_TIMEOUT 20
 
+#ifndef CONFIG_MULTITHREADING
 RING_BUF_DECLARE(sh_buf, 32);
+#else
+struct sh_msg_t {
+    void *fifo_reserved; 
+    uint8_t data;
+};
+
+K_FIFO_DEFINE(sh_fifo);
+#endif
 
 void shell_data_push(uint8_t data) {
+#ifndef CONFIG_MULTITHREADING
     ring_buf_put(&sh_buf, &data, sizeof(data));
     LOG_DBG("uart: %c", data);
+#else
+    struct sh_msg_t *pmsg = k_malloc(sizeof(struct sh_msg_t));
+    if (pmsg == NULL) {
+        LOG_ERR("k_malloc fail!");
+        return;
+    }
+
+    pmsg->data = data;
+    k_fifo_put(&sh_fifo, pmsg);
+#endif
 }
 
+#ifndef CONFIG_MULTITHREADING
 /**
  * @brief 
  * 
@@ -44,3 +65,21 @@ void shell_service_process(void) {
         sh_time = GET_SYS_TIME();
     }
 }
+#endif
+
+#if CONFIG_MULTITHREADING
+
+static void sh_service(void) {
+    while (1) {
+        struct sh_msg_t *pmsg = k_fifo_get(&sh_fifo, K_FOREVER);
+        uint8_t data = pmsg->data;
+        k_free(pmsg);
+
+        shell_process(&data, 1);
+    }
+}
+
+K_THREAD_DEFINE(sh_ser_id, APP_STACK_SIZE, sh_service, NULL, NULL, NULL,
+        APP_PRIO_LOW, 0, 0);
+
+#endif

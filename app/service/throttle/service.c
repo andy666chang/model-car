@@ -45,10 +45,30 @@ static int16_t pre_thro = 0;
 static int16_t thro = 0;
 static uint16_t data = 0;
 
+#ifndef CONFIG_MULTITHREADING
 RING_BUF_DECLARE(thro_buf, 64);
+#else
+struct thro_msg_t {
+    void *fifo_reserved; 
+    uint16_t data;
+};
+
+K_FIFO_DEFINE(thro_fifo);
+#endif
 
 void thro_data_push(uint16_t data) {
+#ifndef CONFIG_MULTITHREADING
     ring_buf_put(&thro_buf, &data, sizeof(data));
+#else
+    struct thro_msg_t *pmsg = k_malloc(sizeof(struct thro_msg_t));
+    if (pmsg == NULL) {
+        LOG_ERR("k_malloc fail!");
+        return;
+    }
+
+    pmsg->data = data;
+    k_fifo_put(&thro_fifo, pmsg);
+#endif
 }
 
 /**
@@ -197,7 +217,11 @@ static inline void thro_cali(void) {
         event_cap &= ~(BIT(THRO_CALI));
 
         // Restart
+#ifndef CONFIG_MULTITHREADING
         k_busy_wait(100*1000);
+#else
+        k_sleep(K_MSEC(100));
+#endif
         sys_reboot(SYS_REBOOT_COLD);
     }
 }
@@ -208,9 +232,19 @@ static inline void thro_cali(void) {
  */
 void thro_service_process(void) {
 
+#ifndef CONFIG_MULTITHREADING
     while (!ring_buf_is_empty(&thro_buf)) {
         ring_buf_get(&thro_buf, &data, sizeof(data));
-
+#else
+    do {
+        struct thro_msg_t *pmsg = k_fifo_get(&thro_fifo, K_MSEC(50));
+        if (pmsg != NULL) {
+            data = pmsg->data;
+            k_free(pmsg);
+        } else {
+            break;
+        }
+#endif
         // Check calibration
         if (system_get_state() == SYSTEM_CALIBRATION) {
             if ((event_cap & BIT(THRO_CALI)) == 0) {
@@ -280,7 +314,11 @@ void thro_service_process(void) {
         pre_thro = thro;
 
         event_cap |= BIT(THRO_INPUT);
+#ifndef CONFIG_MULTITHREADING
     }
+#else
+    } while (0);
+#endif
 
     /* Check throttle event */
     // short 
@@ -326,3 +364,16 @@ void thro_service_process(void) {
     event_cap &= ~(BIT(THRO_INPUT));
     return;
 }
+
+#if CONFIG_MULTITHREADING
+
+static void thro_service(void) {
+    while (1) {
+        thro_service_process();
+    }
+}
+
+K_THREAD_DEFINE(thro_ser_id, APP_STACK_SIZE, thro_service, NULL, NULL, NULL,
+        APP_PRIO_NORMAL, 0, 0);
+
+#endif

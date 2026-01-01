@@ -1,4 +1,5 @@
 
+#include <system.h>
 #include "module/log.h"
 #include "interface.h"
 
@@ -106,4 +107,4 @@ static int config_init(void) {
     return 0;
 }
 
-SYS_INIT(config_init, APPLICATION, 0);
+SYS_INIT(config_init, APPLICATION, SYS_INIT_EARLY);

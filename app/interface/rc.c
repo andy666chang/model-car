@@ -1,4 +1,5 @@
 
+#include <system.h>
 #include "module/log.h"
 #include "interface.h"
 
@@ -103,4 +104,4 @@ static int rc_init(void) {
     return ret;
 }
 
-SYS_INIT(rc_init, APPLICATION, 0);
+SYS_INIT(rc_init, APPLICATION, SYS_INIT_NORMAL);

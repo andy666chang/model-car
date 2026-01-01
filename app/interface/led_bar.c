@@ -1,6 +1,7 @@
 
 #include <math.h>
 
+#include <system.h>
 #include "module/log.h"
 #include "interface.h"
 
@@ -363,4 +364,4 @@ static int led_bar_init(void) {
     return ret;
 }
 
-SYS_INIT(led_bar_init, APPLICATION, 0);
+SYS_INIT(led_bar_init, APPLICATION, SYS_INIT_LATE);
