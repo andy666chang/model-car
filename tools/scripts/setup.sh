@@ -1,8 +1,16 @@
 #!/bin/bash
 
+OS=$(uname -s)
+
 # --- 1. 啟用 Python 虛擬環境 ---
 # 注意：這假定您已經像之前的腳本那樣創建了 .venv 資料夾。
-source .venv/Scripts/activate
+if [ "$OS" = "Linux" ]; then
+    source .venv/bin/activate
+elif [[ "$OS" =~ MINGW* ]] || [[ "$OS" =~ CYGWIN* ]]; then
+    source .venv/Scripts/activate
+else
+    echo "未知的系統: $OS"
+fi
 
 # --- 2. 設定 Zephyr 相關環境變數 ---
 
@@ -16,7 +24,7 @@ WORKSPACE=$(pwd)
 export WORKSPACE
 
 # 使用正斜線 / 作為路徑分隔符
-export ZEPHYR_SDK_INSTALL_DIR="/d/Andy/Desktop/MCHP/zephyr-sdk-0.17.0"
+export ZEPHYR_SDK_INSTALL_DIR="/home/andy/Documents/zephyr-sdk-0.16.8"
 
 # 給予編譯器權限 ＆ 清除cmake cache
 # xattr -r -d com.apple.quarantine "$ZEPHYR_SDK_INSTALL_DIR"
@@ -33,7 +41,7 @@ export ZEPHYR_SDK_INSTALL_DIR="/d/Andy/Desktop/MCHP/zephyr-sdk-0.17.0"
 # --- 5. 執行 Zephyr 環境設定腳本 ---
 # Zephyr 預設提供了 bash 版本的環境設定檔，我們需要 source 它來載入 SDK 路徑等。
 # 請根據您的實際 Zephyr 版本修改以下路徑，並確保該檔案存在。
-source zephyr/zephyr-env.sh
+# source zephyr/zephyr-env.sh
 
 
 # --- 6. 顯示當前環境變數以供驗證 ---

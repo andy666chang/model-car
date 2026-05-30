@@ -10,6 +10,7 @@
 #include <module/log.h>
 
 #include "interface/interface.h"
+#include <interface/led.h>
 
 #define TAG "SHELL-LED"
 
@@ -33,32 +34,32 @@ static int shell_led(int argc, char *argv[]) {
     switch (idx) {
         case 0:
             LOGI(TAG, "HEAD_0_Pin level: %d", level);
-            led_head_set(0, level);
+            led_set(LED_HEAD_0, level);
             break;
         
         case 1:
             LOGI(TAG, "HEAD_1_Pin level: %d", level);
-            led_head_set(1, level);
+            led_set(LED_HEAD_1, level);
             break;
 
         case 2:
             LOGI(TAG, "CHASIS_Pin level: %d", level);
-            led_chasis_set(level);
+            led_set(LED_CHASIS, level);
             break;
 
         case 3:
             LOGI(TAG, "TAIL_0_Pin level: %d", level);
-            led_tail_set(0, level);
+            led_set(LED_TAIL_0, level);
             break;
 
         case 4:
             LOGI(TAG, "TAIL_1_Pin level: %d", level);
-            led_tail_set(1, level);
+            led_set(LED_TAIL_1, level);
             break;
 
         case 5:
             LOGI(TAG, "FIRE_Pin level: %d", level);
-            led_fire_set(level);
+            led_set(LED_FIRE, level);
             break;
         
         default:

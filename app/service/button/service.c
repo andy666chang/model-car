@@ -2,6 +2,8 @@
 #include "system.h"
 #include "module/log.h"
 #include "interface/interface.h"
+#include <interface/led.h>
+#include <interface/led_bar.h>
 
 #include <zephyr/sys/reboot.h>
 #include <zephyr/sys/ring_buffer.h>
@@ -68,25 +70,25 @@ static void btn_switch(void) {
 
     switch (sw_state) {
     case 0:
-        led_chasis_set(OFF);
-        led_tail_set(0, OFF);
+        led_set(LED_CHASIS, OFF);
+        led_set(LED_TAIL_0, OFF);
         break;
 
     case 1:
-        led_chasis_set(ON);
-        led_tail_set(0, ON);
+        led_set(LED_CHASIS, ON);
+        led_set(LED_TAIL_0, ON);
         break;
 
     case 2:
-        led_chasis_set(ON);
-        led_tail_set(0, ON);
-        led_head_set(0, ON);
+        led_set(LED_CHASIS, ON);
+        led_set(LED_TAIL_0, ON);
+        led_set(LED_HEAD_0, ON);
         break;
 
     case 3:
-        led_chasis_set(ON);
-        led_tail_set(0, ON);
-        led_head_set(0, OFF);
+        led_set(LED_CHASIS, ON);
+        led_set(LED_TAIL_0, ON);
+        led_set(LED_HEAD_0, OFF);
         break;
     
     default:
@@ -100,17 +102,17 @@ static void btn_high_beam(void) {
 
     if (beam_state) {
         // turn on high beam
-        led_head_set(1, ON);
-        led_head_set(0, ON);
+        led_set(LED_HEAD_1, ON);
+        led_set(LED_HEAD_0, ON);
     } else {
         // turn off high beam
-        led_head_set(1, OFF);
+        led_set(LED_HEAD_1, OFF);
 
         // Keep btn switch status
         if (sw_state == 2)
-            led_head_set(0, ON);
+            led_set(LED_HEAD_0, ON);
         else
-            led_head_set(0, OFF);
+            led_set(LED_HEAD_0, OFF);
     }
 }
 
@@ -192,9 +194,9 @@ void btn_service_process(void) {
         case BTN_FLASH: // LED Flash
             if (led_stop_blink) {
                 if (sw_state == 0)
-                    led_chasis_set(OFF);
+                    led_set(LED_CHASIS, OFF);
                 else 
-                    led_chasis_set(ON);
+                    led_set(LED_CHASIS, ON);
 
                 led_stop_blink = false;
             } else {

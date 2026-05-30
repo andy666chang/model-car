@@ -1,19 +1,28 @@
 #!/bin/bash
 
-# 建立 Python 虛擬環境
-python -m venv .venv
+OS=$(uname -s)
 
-# 啟動虛擬環境 (使用 source 命令)
-# 在 Windows 的 .bat 中使用 call .venv\Scripts\activate.bat
-source .venv/Scripts/activate
+if [ "$OS" = "Linux" ]; then
+    python3 -m venv .venv
+elif [[ "$OS" =~ MINGW* ]] || [[ "$OS" =~ CYGWIN* ]]; then
+    python -m venv .venv
+else
+    echo "未知的系統: $OS"
+fi
+
+if [ "$OS" = "Linux" ]; then
+    source .venv/bin/activate
+elif [[ "$OS" =~ MINGW* ]] || [[ "$OS" =~ CYGWIN* ]]; then
+    source .venv/Scripts/activate
+else
+    echo "未知的系統: $OS"
+fi
 
 # 安裝 west 工具
 pip install west
 
 # 進入 tools 目錄，使用 -l 參數初始化 west，然後返回上一層
-cd tools
-west init -l
-cd ..
+west init -l tools
 
 # 更新 west 模組和專案
 west update

@@ -1,5 +1,5 @@
 
-#include "interface.h"
+#include <interface/interface.h>
 #include <zephyr/sys/crc.h>
 
 

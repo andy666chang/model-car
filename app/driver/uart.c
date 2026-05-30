@@ -1,7 +1,7 @@
 
 #include <system.h>
 #include "module/log.h"
-#include "interface.h"
+#include <interface/interface.h>
 
 #include <zephyr/init.h>
 #include <zephyr/device.h>
@@ -9,7 +9,7 @@
 
 #define TAG "UART"
 
-const struct device *uart_dev = DEVICE_DT_GET(DT_NODELABEL(usart1));
+const struct device *uart_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_shell_uart));
 
 static void uart_cb(const struct device *dev, void *user_data) {
     uint8_t recv_char;

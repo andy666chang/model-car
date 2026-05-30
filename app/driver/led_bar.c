@@ -3,7 +3,9 @@
 
 #include <system.h>
 #include "module/log.h"
-#include "interface.h"
+
+#include <interface/interface.h>
+#include <interface/led_bar.h>
 
 #include <zephyr/init.h>
 #include <zephyr/device.h>

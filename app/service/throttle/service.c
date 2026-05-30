@@ -2,6 +2,8 @@
 #include "system.h"
 #include "module/log.h"
 #include "interface/interface.h"
+#include <interface/led.h>
+#include <interface/led_bar.h>
 
 #include <zephyr/sys/reboot.h>
 #include <zephyr/sys/ring_buffer.h>
@@ -79,14 +81,14 @@ void thro_data_push(uint16_t data) {
  */
 static inline void thro_short(void) {
     // turn on tail led
-    led_tail_set(0, ON);
-    led_tail_set(1, ON);
+    led_set(LED_TAIL_0, ON);
+    led_set(LED_TAIL_1, ON);
 
     if (WAIT_TIMEOUT(short_timeout, THRO_SHORT_TIMEOUT)) {
         // turn off tail led
         if (sw_state == 0)
-            led_tail_set(0, OFF);
-        led_tail_set(1, OFF);
+            led_set(LED_TAIL_0, OFF);
+        led_set(LED_TAIL_1, OFF);
 
         // Clear event
         event_cap &= ~(BIT(THRO_SHORT));
@@ -99,14 +101,14 @@ static inline void thro_short(void) {
  */
 static inline void thro_long(void) {
     // turn on tail led
-    led_tail_set(0, ON);
-    led_tail_set(1, ON);
+    led_set(LED_TAIL_0, ON);
+    led_set(LED_TAIL_1, ON);
 
     if (WAIT_TIMEOUT(long_timeout, THRO_LONG_TIMEOUT)) {
         // turn off tail led
         if (sw_state == 0)
-            led_tail_set(0, OFF);
-        led_tail_set(1, OFF);
+            led_set(LED_TAIL_0, OFF);
+        led_set(LED_TAIL_1, OFF);
 
         // Clear event
         event_cap &= ~(BIT(THRO_LONG));
@@ -122,19 +124,19 @@ static inline void thro_fire(void) {
 
     if (duration > 3 * THRO_FIRE_TIMEOUT) {
         // turn off fire led
-        led_fire_set(OFF);
+        led_set(LED_FIRE, OFF);
 
         // Clear event
         event_cap &= ~(BIT(THRO_FIRE));
     } else if (duration > 2 * THRO_FIRE_TIMEOUT) {
         // turn off fire led
-        led_fire_set(ON);
+        led_set(LED_FIRE, ON);
     } else if (duration > 1 * THRO_FIRE_TIMEOUT) {
         // turn off fire led
-        led_fire_set(OFF);
+        led_set(LED_FIRE, OFF);
     } else if (duration < THRO_FIRE_TIMEOUT) {
         // turn on fire led
-        led_fire_set(ON);
+        led_set(LED_FIRE, ON);
     }
 }
 
@@ -149,21 +151,21 @@ static inline void thro_blink_wait(void) {
     if ((abs(thro) > prj_cfg->margin) || (led_stop_blink == false)) {
         // Cancel wait
         event_cap &= ~BIT(THRO_WAIT);
-        led_chasis_set(OFF);
+        led_set(LED_CHASIS, OFF);
         led_state = OFF;
 
         // Recover led btn status
         if (led_stop_blink == false) {
             if (sw_state == 0)
-                led_chasis_set(OFF);
+                led_set(LED_CHASIS, OFF);
             else
-                led_chasis_set(ON);
+                led_set(LED_CHASIS, ON);
         }
     } else if (WAIT_TIMEOUT(wait_timeout, THRO_WAIT_TIMEOUT)) {
         // led blink
         if (WAIT_TIMEOUT(blink_time, BLINK_TIMEOUT)) {
             led_state = !led_state;
-            led_chasis_set(led_state);
+            led_set(LED_CHASIS, led_state);
             blink_time = GET_SYS_TIME();
         }
     }
@@ -175,14 +177,14 @@ static inline void thro_blink_wait(void) {
  */
 static inline void thro_brake(void) {
     // turn on tail led
-    led_tail_set(0, ON);
-    led_tail_set(1, ON);
+    led_set(LED_TAIL_0, ON);
+    led_set(LED_TAIL_1, ON);
 
     if ((abs(thro) < prj_cfg->margin) || (thro > prj_cfg->margin)) {
         // turn off tail led
         if (sw_state == 0)
-            led_tail_set(0, OFF);
-        led_tail_set(1, OFF);
+            led_set(LED_TAIL_0, OFF);
+        led_set(LED_TAIL_1, OFF);
 
         // Clear event
         event_cap &= ~(BIT(THRO_BRAKE));
@@ -199,13 +201,13 @@ static inline void thro_cali(void) {
         //  Capture center value
         prj_cfg->center = data;
 
-        led_tail_set(0, ON);
-        led_tail_set(1, ON);
+        led_set(LED_TAIL_0, ON);
+        led_set(LED_TAIL_1, ON);
     } else if ((GET_SYS_TIME() - cali_time) < THRO_CALI_STEP2) {
         //  Capture max value
         prj_cfg->max = data;
 
-        led_fire_set(ON);
+        led_set(LED_FIRE, ON);
     } else {
         LOG_INF("center = %d", prj_cfg->center);
         LOG_INF("max = %d", prj_cfg->max);

@@ -33,16 +33,6 @@ void dump_config(void);
 
 uint32_t crc_calculate(uint8_t *data, uint32_t len);
 
-void led_head_set(uint8_t id, bool en);
-void led_tail_set(uint8_t id, bool en);
-void led_chasis_set(bool en);
-void led_fire_set(bool en);
-void led_string_set(bool en);
-void thro_led_update(int16_t thro);
-void thro_led_brake(void);
-void thro_led_set(uint8_t r, uint8_t g, uint8_t b);
-uint8_t led_idx_max(void);
-
 void btn_data_push(uint16_t data);
 void thro_data_push(uint16_t data);
 void shell_data_push(uint8_t data);

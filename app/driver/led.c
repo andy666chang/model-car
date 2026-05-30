@@ -1,24 +1,18 @@
 
-#include <system.h>
-#include "module/log.h"
-#include "interface.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-#include <zephyr/init.h>
+#include <interface/interface.h>
+#include <interface/led.h>
+
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 
+#include <system.h>
+#include "module/log.h"
+
 #define TAG "LED"
-
-enum {
-    LED_HEAD_0 = 0,
-    LED_HEAD_1,
-    LED_TAIL_0,
-    LED_TAIL_1,
-    LED_CHASIS,
-    LED_FIRE,
-
-    LED_PIN_MAX,
-};
 
 static const struct led_pin_t {
     struct gpio_dt_spec dt;
@@ -50,49 +44,17 @@ static const struct led_pin_t {
     },
 };
 
-void led_head_set(uint8_t id, bool en) {
-
-    switch (id) {
-    case 0:
-        gpio_pin_set_dt(&led_pins[LED_HEAD_0].dt, en);
-        break;
-    
-    case 1:
-        gpio_pin_set_dt(&led_pins[LED_HEAD_1].dt, en);
-        break;
-    
-    default:
-        printf("Unknow id: %d\n", id);
-        break;
+void led_set(led_t id, bool en) {
+  if (id >= LED_HEAD_0 && id < LED_PIN_MAX) {
+    if ((id != LED_CHASIS) || ((prj_cfg->mode == 0) && (id == LED_CHASIS))) {
+      gpio_pin_set_dt(&led_pins[id].dt, en);
     }
+  } else {
+    printf("Unknow id: %d\n", id);
+  }
 }
 
-void led_tail_set(uint8_t id, bool en) {
-
-    switch (id) {
-    case 0:
-        gpio_pin_set_dt(&led_pins[LED_TAIL_0].dt, en);
-        break;
-    
-    case 1:
-        gpio_pin_set_dt(&led_pins[LED_TAIL_1].dt, en);
-        break;
-    
-    default:
-        printf("Unknow id: %d\n", id);
-        break;
-    }
-}
-
-void led_chasis_set(bool en) {
-    if (prj_cfg->mode == 0) {
-        gpio_pin_set_dt(&led_pins[LED_CHASIS].dt, en);
-    }
-}
-
-void led_fire_set(bool en) {
-    gpio_pin_set_dt(&led_pins[LED_FIRE].dt, en);
-}
+#include <zephyr/init.h>
 
 static int led_init(void) {
     int ret = 0;

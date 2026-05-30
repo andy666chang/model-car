@@ -9,6 +9,7 @@ project(module_car)
 
 target_include_directories(app PRIVATE .)
 
+add_subdirectory(driver)
 add_subdirectory(interface)
 add_subdirectory(module)
 add_subdirectory(service)
