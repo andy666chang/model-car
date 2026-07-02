@@ -1,0 +1,112 @@
+name: Module Car CI
+
+on:
+  push:
+    branches: 
+      - "z_fw_/feature/multi_thread"
+      - "z_fw_/feature/simulator/qemu"
+  pull_request:
+    branches: 
+      - "z_fw_/feature/multi_thread"
+
+jobs:
+  build-verification:
+    runs-on: ubuntu-24.04
+
+    strategy:
+      matrix:
+        include:
+          - board: module_car
+          - board: qemu_cortex_m3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build wget
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Cache Toolchain, Python Environment and Zephyr SDK
+      id: zephyr-cache
+      uses: actions/cache@v6
+      with:
+        path: |
+          .venv
+          zephyr
+          zephyr-sdk-0.16.8
+        # 主要 Key：加上板子名稱，讓兩邊在結束時「分開儲存」，絕對不打架
+        key: ${{ runner.os }}-shared-env-${{ matrix.board }}
+        # 後備 Key：如果上面找不到，只要開頭符合這段文字的快取，就直接拿來用！
+        restore-keys: |
+          ${{ runner.os }}-shared-env-
+
+    - name: Install Python Environment and Zephyr SDK
+      if: steps.zephyr-cache.outputs.cache-hit != 'true'
+      run: |
+        echo "快取不存在！開始進行完整安裝..."
+        
+        # 1. 建立 Python 虛擬環境並安裝 west
+        python -m venv .venv
+        source .venv/bin/activate
+        pip install --upgrade pip
+        pip install west
+        
+        # 2. 下載並解壓 Zephyr SDK 最小化版本
+        wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.16.8/zephyr-sdk-0.16.8_linux-x86_64_minimal.tar.xz
+        tar -xf zephyr-sdk-0.16.8_linux-x86_64_minimal.tar.xz
+        
+        # 3. 進入 SDK 目錄並安裝 ARM 工具鏈
+        cd zephyr-sdk-0.16.8
+        ./setup.sh -t arm-zephyr-eabi -c
+        
+        # 清理下載的壓縮檔，避免它佔用快取空間
+        cd ..
+        rm zephyr-sdk-0.16.8_linux-x86_64_minimal.tar.xz
+
+    # 3. 安裝 west 工具並透過你自己的 west.yml 初始化工作區
+    - name: Initialize West workspace
+      run: |
+        source .venv/bin/activate
+
+        west init -l tools
+
+        west update
+
+        west zephyr-export
+
+    # 4. 安裝專案所需的 Python 依賴套件
+    - name: Install Python requirements
+      run: |
+        source .venv/bin/activate
+        pip install -r zephyr/scripts/requirements.txt
+
+    # 5. 下載與設定 Zephyr SDK 編譯器 (以 v0.16.8 ARM 為例)
+    - name: Setup Zephyr SDK
+      run: |
+        # 將 SDK 路徑加入 GitHub Actions 的環境變數中
+        echo "ZEPHYR_SDK_INSTALL_DIR=$GITHUB_WORKSPACE/zephyr-sdk-0.16.8" >> $GITHUB_ENV
+
+    # 6. 使用 West 編譯你的應用程式
+    - name: Build Application
+      run: |
+        source .venv/bin/activate
+        west build -p -b ${{ matrix.board }} app
+
+    - name: Upload Standard Results
+      uses: actions/upload-artifact@v6
+      with:
+        name: compiled-result-${{ matrix.board }}
+        retention-days: 7
+        include-hidden-files: true
+        path: |
+          build/zephyr/.config
+          build/zephyr/zephyr.dts
+          build/zephyr/zephyr_final.map
+          build/zephyr/zephyr.elf
